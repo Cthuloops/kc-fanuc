@@ -89,7 +89,6 @@ def parse_application(lines: list[str]) -> Application:
     for line in lines:
         result = re.search(pattern, line)
         if result is not None:
-            print(result.group("key"))
             if result.group("key") == eApplication.WELDING_EQUIPMENT:
                 members[result.group("key")] = result.group("value")
             else:
