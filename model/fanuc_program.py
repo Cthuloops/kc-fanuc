@@ -1,6 +1,16 @@
 from dataclasses import dataclass
+from enum import (StrEnum, auto)
 
 from .weld_block import WeldBlock
+
+
+class eTCD(StrEnum):
+    STACK_SIZE      = "STACK_SIZE"
+    TASK_PRIORITY   = "TASK_PRIORITY"
+    TIME_SLICE      = "TIME_SLICE"
+    BUSY_LAMP_OFF   = "BUSY_LAMP_OFF"
+    ABORT_REQUEST   = "ABORT_REQUEST"
+    PAUSE_REQUEST   = "PAUSE_REQUEST"
 
 
 @dataclass
@@ -19,6 +29,23 @@ class TCD():
       BUSY_LAMP_OFF	= {self.busy_lamp_off},
       ABORT_REQUEST	= {self.abort_request},
       PAUSE_REQUEST	= {self.pause_request};"""
+
+
+class eAttributes(StrEnum):
+    OWNER           = "OWNER"
+    COMMENT         = "COMMENT"
+    PROG_SIZE       = "PROG_SIZE"
+    DATE_CREATED    = "CREATE"
+    DATE_MODIFIED   = "MODIFIED"
+    FILE_NAME       = "FILE_NAME"
+    VERSION         = "VERSION"
+    LINE_COUNT      = "LINE_COUNT"
+    MEMORY_SIZE     = "MEMORY_SIZE"
+    PROTECT_STATUS  = "PROTECT"
+    TCD             = "TCD"
+    DEFAULT_GROUP   = "DEFAULT_GROUP"
+    CONTROL_NODE    = "CONTROL_CODE"
+
 
 @dataclass
 class Attributes():
@@ -52,6 +79,14 @@ PROTECT		= {self.protect_status};
 DEFAULT_GROUP	= {self.default_group};
 CONTROL_CODE	= {self.control_node};"""
 
+
+class eMPAS(StrEnum):
+    NUM_PASSES   = "MPAS_NUM_PASSES"
+    LAST_PASS    = "MPAS_LAST_PASS"
+    CURRENT_PASS = "MPAS_CURRENT_PASS"
+    STATUS_PASS  = "MPAS_STATUS_PASS"
+
+
 @dataclass
 class MPAS():
     num_passes: int
@@ -65,6 +100,10 @@ MPAS_NUM_PASSES        : {self.num_passes};
 MPAS_LAST_PASS         : {self.last_pass};
 MPAS_CURRENT_PASS      : {self.current_pass};
 MPAS_STATUS_PASS       : {self.status_pass};"""
+
+
+class eApplication(StrEnum):
+    WELDING_EQUIPMENT = "ARC Welding Equipment"
 
 
 @dataclass

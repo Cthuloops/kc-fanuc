@@ -1,7 +1,7 @@
 from enum import (Enum, auto)
 import re
 
-from model import fanuc_program as fp
+from model.fanuc_program import *
 from model.weld_block import WeldBlock
 from error.fanuc_errors import *
 
@@ -11,19 +11,23 @@ def parse_prog(line: str) -> str:
     return line.strip().split()[1]
 
 
-def _parse_tcd(lines: list[str]) -> fp.TCD:
+def _parse_tcd(lines: list[str]) -> TCD:
     if not lines[0].startswith("TCD:"):
         raise FanucException("TCD not in TCD start line")
-    lines[0].removeprefix("TCD:")
-    members = []
+    members = {}
     for line in lines:
-        results = re.search(r"\w+\s= (\d+)", line)
+        results = re.search(r"(?P<key>\w+)\s= (?P<value>\d+)", line)
         if results is not None:
-            members.append(int(results.group(1)))
+            members[results.group("key")] = int(results.group("value"))
         else:
             raise FanucException(f"Error parsing TCD line: {line}")
 
-    return fp.TCD(*members)
+    return TCD(stack_size=members[eTCD.STACK_SIZE],
+               task_priority=members[eTCD.TASK_PRIORITY],
+               time_slice=members[eTCD.TIME_SLICE],
+               busy_lamp_off=members[eTCD.BUSY_LAMP_OFF],
+               abort_request=members[eTCD.ABORT_REQUEST],
+               pause_request=members[eTCD.PAUSE_REQUEST])
 
 
 def _find_tcd_end(lines: list[str], start: int) -> int:
@@ -34,11 +38,11 @@ def _find_tcd_end(lines: list[str], start: int) -> int:
     return end
 
 
-def parse_attributes(lines: list[str]) -> fp.Attributes:
+def parse_attributes(lines: list[str]) -> Attributes:
     if not lines[0].startswith("/ATTR"):
         raise FanucException("Bad /ATTR section")
 
-    attributes = []
+    attributes = {}
     int_attributes = ["PROG_SIZE", "VERSION", "LINE_COUNT", "MEMORY_SIZE"]
     search_pattern = r"(?P<key>\w+)\s+= \"?(?P<value>[^;\n\"]+)"
 
@@ -48,7 +52,7 @@ def parse_attributes(lines: list[str]) -> fp.Attributes:
         line = lines[i]
         if line.startswith("TCD:"):
             tcd_length = _find_tcd_end(lines, i)
-            attributes.append(_parse_tcd(lines[i:tcd_length]))
+            attributes["TCD"] = _parse_tcd(lines[i:tcd_length])
             i += tcd_length - i
             continue
 
@@ -57,25 +61,46 @@ def parse_attributes(lines: list[str]) -> fp.Attributes:
             raise FanucException(f"Failed search in attributes: {line}")
 
         if result.group("key") in int_attributes:
-            attributes.append(int(result.group("value")))
+            attributes[result.group("key")] = int(result.group("value"))
         else:
-            attributes.append(result.group("value"))
+            attributes[result.group("key")] = result.group("value")
 
         i += 1
 
-    return fp.Attributes(*attributes)
+    return Attributes(owner=attributes[eAttributes.OWNER],
+                      comment=attributes[eAttributes.COMMENT],
+                      program_size=attributes[eAttributes.PROG_SIZE],
+                      date_created=attributes[eAttributes.DATE_CREATED],
+                      date_modified=attributes[eAttributes.DATE_MODIFIED],
+                      file_name=attributes[eAttributes.FILE_NAME],
+                      version=attributes[eAttributes.VERSION],
+                      line_count=attributes[eAttributes.LINE_COUNT],
+                      memory_size=attributes[eAttributes.MEMORY_SIZE],
+                      protect_status=attributes[eAttributes.PROTECT_STATUS],
+                      tcd=attributes[eAttributes.TCD],
+                      default_group=attributes[eAttributes.DEFAULT_GROUP],
+                      control_node=attributes[eAttributes.CONTROL_NODE])
 
 
-def parse_application(lines: list[str]) -> fp.Application:
-    members = []
-    pattern = re.compile(r"\w+\s+:\s+([^;\n]+)")
+def parse_application(lines: list[str]) -> Application:
+    members = {}
+    pattern = re.compile(r"(?P<key>\w+? ?\w+? ?\w+)\s+:\s+(?P<value>[^;\n]+)")
 
     for line in lines:
         result = re.search(pattern, line)
         if result is not None:
-            members.append(result.group(1))
+            print(result.group("key"))
+            if result.group("key") == eApplication.WELDING_EQUIPMENT:
+                members[result.group("key")] = result.group("value")
+            else:
+                members[result.group("key")] = int(result.group("value"))
 
-    return fp.Application(members[0], fp.MPAS(*members[1:]))
+    return Application(members[eApplication.WELDING_EQUIPMENT],
+                       MPAS(num_passes=members[eMPAS.NUM_PASSES],
+                            last_pass=members[eMPAS.LAST_PASS],
+                            current_pass=members[eMPAS.CURRENT_PASS],
+                            status_pass=members[eMPAS.STATUS_PASS])
+                            )
 
 
 def _find_weld_id(lines: list[str], start: int, amount: int) -> str | None:
@@ -281,7 +306,6 @@ def parse_ls(file_path: str):
                 continue
 
             case Section.MOTN:
-                # TODO(hc): Handle Motion
                 end = _find_section_end(lines, i, "/POS")
                 motion = parse_motion(lines, i, end)
                 parsed.append(motion)
@@ -292,10 +316,9 @@ def parse_ls(file_path: str):
                 end = _find_section_end(lines, i, "/END")
                 # TODO(hc): Handle Position
                 positions = parse_position(lines, i, end)
-                # parsed.append(positions)
-                parsed.append([])
+                parsed.append(positions)
                 section = Section.END
 
         i += 1
     
-    return fp.FanucProgram(*parsed)
+    return FanucProgram(*parsed)
