@@ -74,7 +74,7 @@ class Application():
 
     def __str__(self):
         return f"""/APPL
-  ARC Welding Equipment : 1,*,*,*,*;
+  ARC Welding Equipment : {self.welding_equipment};
 
 {self.mpas}
 """
