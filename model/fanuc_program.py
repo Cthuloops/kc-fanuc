@@ -38,19 +38,19 @@ class Attributes():
 
     def __str__(self):
         return f"""/ATTR
-OWNER		= MNEDITOR;
-COMMENT		= "Air move update";
-PROG_SIZE	= 123886;
-CREATE		= DATE 25-08-25  TIME 10:39:22;
-MODIFIED	= DATE 25-08-25  TIME 10:43:36;
-FILE_NAME	= OP5_LRG_;
-VERSION		= 0;
-LINE_COUNT	= 2640;
-MEMORY_SIZE	= 124514;
-PROTECT		= READ_WRITE;
+OWNER		= {self.owner};
+COMMENT		= "{self.comment}";
+PROG_SIZE	= {self.program_size};
+CREATE		= {self.date_created};
+MODIFIED	= {self.date_modified};
+FILE_NAME	= {self.file_name};
+VERSION		= {self.version};
+LINE_COUNT	= {self.line_count};
+MEMORY_SIZE	= {self.memory_size};
+PROTECT		= {self.protect_status};
 {self.tcd}
-DEFAULT_GROUP	= 1,1,*,*,*;
-CONTROL_CODE	= 00000000 00000000;"""
+DEFAULT_GROUP	= {self.default_group};
+CONTROL_CODE	= {self.control_node};"""
 
 @dataclass
 class MPAS():
