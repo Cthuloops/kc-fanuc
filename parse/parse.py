@@ -188,10 +188,9 @@ def parse_motion(lines: list[str], start: int, end: int):
     i = start
     while i < end:
         line = lines[i]
-
             
-        if "Arc Start" in lines[i + 1]:
-            weld_block, unknown_amount = _parse_weld_block(lines, i, end,
+        if "Arc Start" in line:
+            weld_block, unknown_amount = _parse_weld_block(lines, i - 1, end,
                                                            unknown_amount)
             if weld_block in members:
                 print(f"Duplicate weld found {weld_block.id}")
@@ -224,7 +223,7 @@ def parse_positions(lines: list[str], start: int, end: int
                     j += 1
                     break
                 j += 1
-            positions[number] = lines[i:j]
+            positions[number.group(1)] = lines[i:j]
 
             i += j - i
             continue
@@ -266,10 +265,11 @@ def _find_section_end(lines: list[str], start: int, next_header: str) -> int:
     SectionNotFoundError
         If the next header isn't found.
     """
+    next_header = next_header + "\n"
     lines_length = len(lines)
     end = start
     while end < lines_length:
-        if next_header in lines[end]:
+        if next_header == lines[end]:
             return end
         end += 1
     raise SectionNotFoundError(f"Expected header {next_header!r} not found.")
