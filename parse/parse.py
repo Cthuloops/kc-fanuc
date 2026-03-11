@@ -195,7 +195,7 @@ def parse_motion(lines: list[str], start: int, end: int):
                                                            unknown_amount)
             if weld_block in members:
                 print(f"Duplicate weld found {weld_block.id}")
-                print(f"Line number {weld_block.lines[0].string.split(":")[0]}")
+                print(f"Line number {weld_block.lines[0].split(":")[0]}")
 
             members.append(weld_block)
             i += len(weld_block.lines)
@@ -207,9 +207,32 @@ def parse_motion(lines: list[str], start: int, end: int):
     return members
 
 
+def parse_positions(lines: list[str], start: int, end: int
+                    ) -> dict[int, list[str]]:
+    number_pattern = re.compile(r"P\[(\d+)\]{")
 
-def parse_position(lines: list[str], start: int, end: int):
-    return lines[start : end]
+    positions = {}
+    i = start
+    while i < end:
+        line = lines[i]
+        number = re.search(number_pattern, line)
+
+        if number is not None:
+            j = i
+            while j < end:
+                if lines[j].startswith("};"):
+                    j += 1
+                    break
+                j += 1
+            positions[number] = lines[i:j]
+
+            i += j - i
+            continue
+
+        i += 1
+
+
+    return positions
 
 
 class Section(Enum):
@@ -313,10 +336,12 @@ def parse_ls(file_path: str):
             case Section.PSTN:
                 end = _find_section_end(lines, i, "/END")
                 # TODO(hc): Handle Position
-                positions = parse_position(lines, i, end)
+                positions = parse_positions(lines, i, end)
                 parsed.append(positions)
                 section = Section.END
 
         i += 1
+
+    
     
     return FanucProgram(*parsed)

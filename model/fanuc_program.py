@@ -126,14 +126,17 @@ class Weld():
 class WeldBlock():
     def __init__(self, id: str, lines: list[str]):
         self.id = id
-        self.lines = self._welds(lines)
+        self._lines = self._welds(lines)
 
     def __str__(self):
-        return ''.join(line.string for line in self.lines)
+        return ''.join(line.string for line in self._lines)
 
     def _welds(self, lines: list[str]):
         return [Weld(line) for line in lines]
 
+    @property
+    def lines(self):
+        return [weld.string for weld in self._lines]
 
 @dataclass
 class FanucProgram():
@@ -141,7 +144,7 @@ class FanucProgram():
     attr: Attributes
     appl: Application 
     motn: list[str | WeldBlock]
-    pstn: list[str]
+    pstn: dict[int, list[str]]
 
     def __motn_str(self):
         print_lines = []
@@ -154,7 +157,9 @@ class FanucProgram():
         return ''.join(print_lines)
 
     def __pstn_str(self):
-        return ''.join(line for line in self.pstn)
+        vals = list(self.pstn.values())
+        # I hate this, but just join all the lines together as a single string.
+        return ''.join(line for lines in vals for line in lines)
 
     def __str__(self):
         return f"""/PROG  {self.name}
