@@ -122,7 +122,7 @@ def _find_weld_id(lines: list[str], start: int, amount: int) -> str | None:
     id_pattern = re.compile(r"!([FLATWRE]{2,3}\d{2}[LMXZ]\d{4})\b",
                             flags=re.IGNORECASE)
 
-    for i in range(start - amount, start, -1):
+    for i in range(start - amount, start):
         result = re.search(id_pattern, lines[i])
         if result is not None:
             return result.group(1)
@@ -139,9 +139,9 @@ def _parse_weld_block(lines: list[str], start: int, end: int,
     weave = 0
     track = 0
 
-    weld = start
-    while weld < end:
-        line = lines[weld]
+    i = start
+    while i < end:
+        line = lines[i]
 
         if "Arc Start" in line:
             arc += 1
@@ -160,16 +160,16 @@ def _parse_weld_block(lines: list[str], start: int, end: int,
         if re.search(empty_line, line):
             break
 
-        weld += 1
+        i += 1
 
     
-    weld_id = _find_weld_id(lines, weld, 10)
+    weld_id = _find_weld_id(lines, start, 10)
 
     if weld_id is None:
         unknown_amount += 1
         weld_id = f"Unknown{unknown_amount}"
 
-    weld = WeldBlock(weld_id, lines[start:weld])
+    weld = WeldBlock(weld_id, lines[start:i])
 
     if arc != 0:
         print("Too few arc ends" if arc < 0 else "Too many arc ends")
