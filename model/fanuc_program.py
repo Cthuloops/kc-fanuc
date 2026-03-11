@@ -118,12 +118,21 @@ class Application():
 
 
 @dataclass
+class Weld():
+    string: str
+    position: int = -1
+
+
 class WeldBlock():
-    id: str
-    lines: list[str]
+    def __init__(self, id: str, lines: list[str]):
+        self.id = id
+        self.lines = self._welds(lines)
 
     def __str__(self):
-        return ''.join(line for line in self.lines)
+        return ''.join(line.string for line in self.lines)
+
+    def _welds(self, lines: list[str]):
+        return [Weld(line) for line in lines]
 
 
 @dataclass

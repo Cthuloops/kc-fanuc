@@ -195,7 +195,7 @@ def parse_motion(lines: list[str], start: int, end: int):
                                                            unknown_amount)
             if weld_block in members:
                 print(f"Duplicate weld found {weld_block.id}")
-                print(f"Line number {weld_block.lines[0].split(":")[0]}")
+                print(f"Line number {weld_block.lines[0].string.split(":")[0]}")
 
             members.append(weld_block)
             i += len(weld_block.lines)
