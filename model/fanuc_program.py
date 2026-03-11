@@ -164,6 +164,6 @@ class FanucProgram():
     def __str__(self):
         return f"""/PROG  {self.name}
 {self.attr}
-{self.appl}
-{self.__motn_str()}
+{self.appl}/MN
+{self.__motn_str()}/POS
 {self.__pstn_str()}/END"""
