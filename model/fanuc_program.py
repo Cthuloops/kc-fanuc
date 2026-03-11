@@ -132,7 +132,7 @@ class WeldBlock():
         return ''.join(line.string for line in self._lines)
 
     def _welds(self, lines: list[str]):
-        return [Weld(line) for line in lines]
+        return [Weld(string=line) for line in lines]
 
     @property
     def lines(self):
@@ -161,9 +161,27 @@ class FanucProgram():
         # I hate this, but just join all the lines together as a single string.
         return ''.join(line for lines in vals for line in lines)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"""/PROG  {self.name}
 {self.attr}
 {self.appl}/MN
 {self.__motn_str()}/POS
+{self.__pstn_str()}/END"""
+
+    def _motn_no_welds(self) -> str:
+        print_lines = []
+        for line in self.motn:
+            if isinstance(line, WeldBlock):
+                print_lines.append(f"\t: !PASTE {line.id}\t;\n")
+            else:
+                print_lines.append(line)
+
+        return ''.join(print_lines)
+
+
+    def weld_scrub(self) -> str:
+        return f"""/PROG  {self.name}
+{self.attr}
+{self.appl}/MN
+{self._motn_no_welds()}/POS
 {self.__pstn_str()}/END"""
