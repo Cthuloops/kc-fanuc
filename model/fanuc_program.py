@@ -166,4 +166,4 @@ class FanucProgram():
 {self.attr}
 {self.appl}
 {self.__motn_str()}
-{self.__pstn_str()}"""
+{self.__pstn_str()}/END"""
