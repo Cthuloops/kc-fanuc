@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from enum import (StrEnum, auto)
 
-from .weld_block import WeldBlock
-
 
 class eTCD(StrEnum):
     STACK_SIZE      = "STACK_SIZE"
@@ -117,6 +115,15 @@ class Application():
 
 {self.mpas}
 """
+
+
+@dataclass
+class WeldBlock():
+    id: str
+    lines: list[str]
+
+    def __str__(self):
+        return ''.join(line for line in self.lines)
 
 
 @dataclass

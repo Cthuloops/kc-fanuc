@@ -2,7 +2,6 @@ from enum import (Enum, auto)
 import re
 
 from model.fanuc_program import *
-from model.weld_block import WeldBlock
 from error.fanuc_errors import *
 
 def parse_prog(line: str) -> str:
